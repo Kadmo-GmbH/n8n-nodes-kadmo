@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 (2026-11-13)
+
+- Published from GitHub Actions through npm trusted publishing, without a stored token. The nodes and the credential are unchanged.
+
 ## 0.1.0 (2026-11-13)
 
 - The **Kadmo API** credential: an API token and the app's base URL, tested with `GET /api/v1/me`.

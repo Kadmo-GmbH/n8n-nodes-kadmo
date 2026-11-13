@@ -1,6 +1,6 @@
 {
   "name": "@kadmo/n8n-nodes-kadmo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "n8n nodes for Kadmo: dispatch jobs, create tasks, run playbooks and react when the work finishes.",
   "license": "MIT",
   "homepage": "https://kadmo.ai",
