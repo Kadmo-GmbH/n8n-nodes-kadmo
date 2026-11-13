@@ -133,6 +133,7 @@ Built and tested with n8n 2.47 (`n8n-workflow` 2.47) and Kadmo API v1.
 
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
 - [Kadmo API](https://docs.kadmo.ai/api/overview)
+- [Kadmo API contract (OpenAPI 3.1)](https://app.kadmo.ai/api/v1/openapi.json)
 
 ## License
 
