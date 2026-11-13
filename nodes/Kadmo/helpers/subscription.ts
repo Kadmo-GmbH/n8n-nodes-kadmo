@@ -43,12 +43,18 @@ async function listSubscriptions(this: IHookFunctions): Promise<IDataObject[]> {
 	return Array.isArray(body.data) ? (body.data as IDataObject[]) : [];
 }
 
-/** Deletes one subscription; one already gone counts as deleted. */
+/**
+ * Deletes one subscription; one already gone counts as deleted. Only Kadmo's own `webhook_not_found` says so: a 404
+ * from anything else at the Base URL (a proxy, a maintenance page) would forget a subscription that still delivers.
+ */
 async function deleteSubscription(this: IHookFunctions, id: number): Promise<void> {
 	try {
 		await kadmoRequest.call(this, { method: 'DELETE', path: `/webhooks/${id}` });
 	} catch (error) {
-		const gone = error instanceof NodeApiError && error.httpCode === '404';
+		const gone =
+			error instanceof NodeApiError &&
+			error.httpCode === '404' &&
+			(error.errorResponse as IDataObject | undefined)?.code === 'webhook_not_found';
 		if (gone) return;
 		const nodeError =
 			error instanceof NodeApiError ? error : new NodeApiError(this.getNode(), { message: String(error) });

@@ -162,6 +162,15 @@ describe('delete', () => {
 		expect(staticData).toEqual({});
 	});
 
+	it('keeps the data when a 404 is not Kadmo’s webhook_not_found', async () => {
+		const { context, staticData } = hookContext({
+			answers: [{ statusCode: 404, body: '<html>Not Found</html>' }],
+			staticData: { webhookId: 7, webhookSecret: SECRET },
+		});
+		await expect(hooks.delete.call(context)).rejects.toBeInstanceOf(NodeApiError);
+		expect(staticData).toEqual({ webhookId: 7, webhookSecret: SECRET });
+	});
+
 	it('throws a NodeApiError on a revoked token', async () => {
 		const { context } = hookContext({
 			answers: [{ statusCode: 401, body: { error: 'Unauthorized.', code: 'unauthorized' } }],
