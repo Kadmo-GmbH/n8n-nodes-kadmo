@@ -43,7 +43,8 @@
       "dist/credentials/KadmoApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Kadmo/Kadmo.node.js"
+      "dist/nodes/Kadmo/Kadmo.node.js",
+      "dist/nodes/Kadmo/KadmoTrigger.node.js"
     ]
   },
   "devDependencies": {
