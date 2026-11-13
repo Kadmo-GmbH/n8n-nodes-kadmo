@@ -24,6 +24,7 @@ describe('package.json', () => {
 		expect(pkg.n8n.n8nNodesApiVersion).toBe(1);
 		expect(pkg.n8n.credentials).toContain('dist/credentials/KadmoApi.credentials.js');
 		expect(pkg.n8n.nodes).toContain('dist/nodes/Kadmo/Kadmo.node.js');
+		expect(pkg.n8n.nodes).toContain('dist/nodes/Kadmo/KadmoTrigger.node.js');
 		for (const entry of [...pkg.n8n.credentials, ...pkg.n8n.nodes]) {
 			expect(entry).toMatch(/^dist\/.+\.js$/);
 		}
