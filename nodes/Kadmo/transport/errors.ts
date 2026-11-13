@@ -24,6 +24,7 @@ const WHAT_TO_DO: Record<string, string> = {
 	task_not_found: 'Check the Task Key: it must be a task of Kadmo’s Tasks or of the tracker the workspace files in.',
 	job_not_found: 'Check the Job ID: it is the id the Dispatch operation answered.',
 	webhook_not_found: 'The subscription is already gone.',
+	workspace_required: 'Pick a workspace from the list.',
 	invalid_request: 'Check the parameters named above.',
 	invalid_idempotency_key: 'The Idempotency Key must be 1 to 255 visible ASCII characters.',
 	idempotency_key_reused:
@@ -86,8 +87,10 @@ export function describeRefusal(status: number, refusal: KadmoRefusal): string {
 	if (code === 'run_active' && refusal.run?.url) {
 		parts.push(`The run: ${refusal.run.url}`);
 	}
+	// A 404 without Kadmo's body comes from something else at the Base URL: an address that does not serve the API.
+	const notKadmo = !code && status === 404;
 	parts.push(
-		WHAT_TO_DO[code] ??
+		WHAT_TO_DO[notKadmo ? 'not_found' : code] ??
 			(status >= 500
 				? 'Kadmo could not complete the call. Run the node again in a few minutes.'
 				: `Kadmo answered ${status}${code ? ` (${code})` : ''}.`),
