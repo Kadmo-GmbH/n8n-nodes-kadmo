@@ -1,0 +1,30 @@
+{
+  "operation": "createWebhook",
+  "status": 201,
+  "request": {
+    "url": "https://hooks.example.com/kadmo",
+    "events": [
+      "job.needs_input",
+      "job.finished",
+      "job.finished"
+    ]
+  },
+  "answer": {
+    "id": 1,
+    "url": "https://hooks.example.com/kadmo",
+    "events": [
+      "job.finished",
+      "job.needs_input"
+    ],
+    "workspace": null,
+    "status": "active",
+    "disabled_reason": null,
+    "created_by": {
+      "id": 1,
+      "name": "Ada"
+    },
+    "created_at": "2026-11-13T04:27:25.641Z",
+    "last_delivery_at": null,
+    "secret": "kadmo_whsec_EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLE0"
+  }
+}

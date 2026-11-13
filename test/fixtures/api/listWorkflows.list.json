@@ -1,0 +1,24 @@
+{
+  "operation": "listWorkflows",
+  "status": 200,
+  "answer": {
+    "data": [
+      {
+        "name": "triage",
+        "description": "Sort a ticket",
+        "parameters": [
+          {
+            "name": "depth",
+            "required": false,
+            "default": "shallow"
+          },
+          {
+            "name": "ticket_url",
+            "required": true,
+            "default": null
+          }
+        ]
+      }
+    ]
+  }
+}

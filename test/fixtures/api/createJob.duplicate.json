@@ -1,0 +1,15 @@
+{
+  "operation": "createJob",
+  "status": 409,
+  "request": {
+    "workflow": "se-work",
+    "workspace": "main",
+    "input": {
+      "ticket_url": "https://example.atlassian.net/browse/PROJ-123"
+    }
+  },
+  "answer": {
+    "error": "The same work is already queued or running for this task.",
+    "code": "duplicate_job"
+  }
+}

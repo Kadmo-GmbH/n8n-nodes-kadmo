@@ -1,0 +1,12 @@
+{
+  "secret": "kadmo_whsec_EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLE0",
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "Kadmo-Webhooks/1",
+    "Kadmo-Event": "job.finished",
+    "Kadmo-Delivery": "1",
+    "Kadmo-Timestamp": "1794540000",
+    "Kadmo-Signature": "v1=2caf3f8df8a69f8e5abc91604f824b66d7612db45450398b305b3fbafe755111"
+  },
+  "body": "{\"id\":1,\"type\":\"job.finished\",\"api_version\":\"v1\",\"created_at\":\"2026-11-13T04:57:06.884Z\",\"webhook_id\":1,\"data\":{\"job\":{\"id\":1,\"status\":\"failed\",\"workflow\":\"se-work\",\"workspace\":{\"slug\":\"main\",\"name\":\"Main\"},\"task\":null,\"input\":{},\"created_by\":{\"id\":1,\"name\":\"Ada\"},\"agent\":{\"id\":1,\"name\":\"Builder\"},\"run\":null,\"needs_input\":null,\"result\":null,\"error\":null,\"app_job_id\":1,\"url\":\"https://app.example.test/jobs/1\",\"created_at\":\"2026-11-13T04:54:05.885Z\",\"started_at\":\"2026-11-13T04:53:06.884Z\",\"finished_at\":\"2026-11-13T04:54:06.884Z\"}}}"
+}

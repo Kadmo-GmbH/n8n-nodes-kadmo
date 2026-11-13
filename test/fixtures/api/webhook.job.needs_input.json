@@ -1,0 +1,12 @@
+{
+  "secret": "kadmo_whsec_EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLE0",
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "Kadmo-Webhooks/1",
+    "Kadmo-Event": "job.needs_input",
+    "Kadmo-Delivery": "2",
+    "Kadmo-Timestamp": "1794540000",
+    "Kadmo-Signature": "v1=c6dd48c47bf528f9b501cc5b22eefed2ae73d3d62da2f98ed5c96214d74d9cd7"
+  },
+  "body": "{\"id\":2,\"type\":\"job.needs_input\",\"api_version\":\"v1\",\"created_at\":\"2026-11-13T04:57:06.884Z\",\"webhook_id\":1,\"data\":{\"job\":{\"id\":2,\"status\":\"needs_input\",\"workflow\":\"se-work\",\"workspace\":{\"slug\":\"main\",\"name\":\"Main\"},\"task\":null,\"input\":{},\"created_by\":{\"id\":1,\"name\":\"Ada\"},\"agent\":{\"id\":1,\"name\":\"Builder\"},\"run\":null,\"needs_input\":{\"reason\":\"question\",\"question\":\"Which branch should the fix target?\",\"options\":[\"main\",\"release/2.4\"],\"asked_at\":\"2026-11-13T04:54:06.884Z\",\"url\":\"https://app.example.test/jobs/2\"},\"result\":null,\"error\":null,\"app_job_id\":2,\"url\":\"https://app.example.test/jobs/2\",\"created_at\":\"2026-11-13T04:54:05.899Z\",\"started_at\":\"2026-11-13T04:54:06.884Z\",\"finished_at\":null}}}"
+}

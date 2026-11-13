@@ -1,0 +1,16 @@
+{
+  "operation": "listWorkspaces",
+  "status": 200,
+  "answer": {
+    "data": [
+      {
+        "slug": "web",
+        "name": "Web",
+        "new_tasks": {
+          "tracker": "internal",
+          "project": null
+        }
+      }
+    ]
+  }
+}

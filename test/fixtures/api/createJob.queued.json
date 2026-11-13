@@ -1,0 +1,41 @@
+{
+  "operation": "createJob",
+  "status": 201,
+  "request": {
+    "workflow": "se-work",
+    "workspace": "main",
+    "input": {
+      "ticket_url": "https://example.atlassian.net/browse/PROJ-123"
+    }
+  },
+  "answer": {
+    "id": 1,
+    "status": "queued",
+    "workflow": "se-work",
+    "workspace": {
+      "slug": "main",
+      "name": "Main"
+    },
+    "task": {
+      "key": "PROJ-123",
+      "url": "https://example.atlassian.net/browse/PROJ-123"
+    },
+    "input": {
+      "ticket_url": "https://example.atlassian.net/browse/PROJ-123"
+    },
+    "created_by": {
+      "id": 1,
+      "name": "Ada"
+    },
+    "agent": null,
+    "run": null,
+    "needs_input": null,
+    "result": null,
+    "error": null,
+    "app_job_id": null,
+    "url": "http://localhost/jobs?status=queued",
+    "created_at": "2026-11-13T01:12:34.025Z",
+    "started_at": null,
+    "finished_at": null
+  }
+}
