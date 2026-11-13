@@ -33,7 +33,7 @@ export const idempotencyKeyOption: INodeProperties = {
 	default: '',
 	placeholder: 'e.g. order-1042',
 	description:
-		'Kadmo answers a repeated request with the same key with its first answer, for 24 hours. Empty: the node makes one per execution, run and item, so a retry never starts the same work twice.',
+		'Kadmo answers a repeated request with the same key with its first answer, for 24 hours, so use an expression that differs per item, such as an order number from the input. Empty: the node makes one per execution, run and item, so a retry never starts the same work twice.',
 };
 
 /** The effort option of a dispatch or a run. */

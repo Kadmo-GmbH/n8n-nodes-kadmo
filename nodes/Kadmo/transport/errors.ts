@@ -28,7 +28,7 @@ const WHAT_TO_DO: Record<string, string> = {
 	invalid_request: 'Check the parameters named above.',
 	invalid_idempotency_key: 'The Idempotency Key must be 1 to 255 visible ASCII characters.',
 	idempotency_key_reused:
-		'This Idempotency Key was used for a different request. Leave the option empty to let the node make one per item.',
+		'A request with this Idempotency Key was sent before with other values. If the node made the key, an earlier try of this item reached Kadmo while an expression (such as {{$now}}) gave other values: check in Kadmo whether the work already exists before running again. If you set the key, use one that differs per item.',
 	idempotency_in_progress: 'The same request is still running in Kadmo. Run the node again in a moment.',
 	duplicate_job: 'The same workflow is already queued or running for this task. Nothing new was started.',
 	run_active: 'A run already drives this task. Nothing new was started: follow that run, or wait until it ends.',

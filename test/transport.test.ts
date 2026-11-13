@@ -225,7 +225,7 @@ describe('refusals', () => {
 		[402, 'no_credit', 'Add credit to the Kadmo account under Settings › Billing'],
 		[404, 'workspace_not_found', 'Check the Workspace parameter'],
 		[404, 'not_found', 'The Base URL in the credential does not serve Kadmo’s API'],
-		[409, 'idempotency_key_reused', 'This Idempotency Key was used for a different request'],
+		[409, 'idempotency_key_reused', 'A request with this Idempotency Key was sent before with other values'],
 		[413, 'payload_too_large', 'The request is over 512 KB'],
 		[500, 'internal_error', 'Kadmo could not complete the call'],
 	])('%i %s → the table’s line', async (status, code, line) => {
