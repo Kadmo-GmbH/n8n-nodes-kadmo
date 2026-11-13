@@ -1,0 +1,23 @@
+{
+  "operation": "listPlaybooks",
+  "status": 200,
+  "answer": {
+    "data": [
+      {
+        "slug": "ship-it",
+        "name": "Ship It",
+        "description": "Plan then verify",
+        "steps": [
+          {
+            "role": "se",
+            "workflow": "agent_se_plan"
+          },
+          {
+            "role": "qa",
+            "workflow": "agent_qa_verify"
+          }
+        ]
+      }
+    ]
+  }
+}

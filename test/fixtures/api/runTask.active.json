@@ -1,0 +1,25 @@
+{
+  "operation": "runTask",
+  "status": 409,
+  "request": {
+    "playbook": "bug-fix",
+    "hint": "again"
+  },
+  "answer": {
+    "error": "A run already drives this task. Follow it, or wait until it ends.",
+    "code": "run_active",
+    "run": {
+      "id": 2,
+      "status": "running",
+      "outcome": null,
+      "step_index": 0,
+      "playbook": {
+        "slug": "bug-fix",
+        "name": "Bug Fix"
+      },
+      "url": "http://localhost/playbooks/runs/2",
+      "created_at": "2026-11-13T01:41:08.815Z",
+      "finished_at": null
+    }
+  }
+}

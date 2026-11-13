@@ -1,0 +1,14 @@
+{
+  "operation": "createWebhook",
+  "status": 422,
+  "request": {
+    "url": "http://hooks.example.com/k",
+    "events": [
+      "job.finished"
+    ]
+  },
+  "answer": {
+    "error": "The URL must start with https://.",
+    "code": "invalid_webhook_url"
+  }
+}

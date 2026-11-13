@@ -1,0 +1,3524 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kadmo API",
+    "version": "1.1.0",
+    "description": "Start and follow Kadmo work over HTTP with an API token. Every answer is JSON; every refusal is `{ error, code }`."
+  },
+  "servers": [
+    {
+      "url": "https://app.kadmo.ai/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "apiToken": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account"
+    },
+    {
+      "name": "Jobs"
+    },
+    {
+      "name": "Tasks"
+    },
+    {
+      "name": "Webhooks"
+    },
+    {
+      "name": "Catalog"
+    }
+  ],
+  "paths": {
+    "/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Who the token is",
+        "description": "The member the token acts as, their account and role, and the token itself. A cheap call to test a credential.",
+        "responses": {
+          "200": {
+            "description": "The token’s member and account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "post": {
+        "operationId": "createJob",
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Dispatch a job",
+        "description": "Queue a workflow in a workspace. The job starts `queued` and an agent of the account takes it. A job can spend the account’s credit.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional. The same key with the same request within 24 hours answers the first answer again and writes nothing.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "pattern": "^[\\x21-\\x7E]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The job, `queued`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused: `invalid_idempotency_key`, `invalid_request`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Refused: `budget_reached`, `no_credit`, `trial_expired`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused: `workflow_not_found`, `workspace_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused: `duplicate_job`, `idempotency_in_progress`, `idempotency_key_reused`, `workspace_archived`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Refused: `payload_too_large`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Refused: `unsupported_media_type`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Refused: `model_not_in_plan`, `role_not_enabled`, `role_not_runnable`, `workflow_not_runnable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `daily_cap_reached`, `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Refused: `authorisation_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listJobs",
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "List recent jobs",
+        "description": "The account’s jobs, newest first, a page at a time.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated: `queued`, `running`, `needs_input`, `succeeded`, `failed`, `cancelled`, or `finished` for the last three.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z_]+(,[a-z_]+)*$"
+            }
+          },
+          {
+            "name": "workspace",
+            "in": "query",
+            "required": false,
+            "description": "A workspace’s slug.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "workflow",
+            "in": "query",
+            "required": false,
+            "description": "A workflow’s name.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "description": "A task’s key.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "app_job_id",
+            "in": "query",
+            "required": false,
+            "description": "The app’s job number.",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "At most this many, 1 to 100; 20 when unset.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "The `next_cursor` of the previous page.",
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of jobs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused: `invalid_request`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "operationId": "getJob",
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Get a job",
+        "description": "The job with its status, its agent, its playbook run, what it waits on and, once finished, its result.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The job’s id.",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused: `job_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "post": {
+        "operationId": "createTask",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Create a task",
+        "description": "File a ticket in the workspace’s tracker, or as an internal task, and add it to Tasks as `pending`. It does not start: run a playbook on it to start work.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional. The same key with the same request within 24 hours answers the first answer again and writes nothing.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "pattern": "^[\\x21-\\x7E]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The task, `pending`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused: `invalid_idempotency_key`, `invalid_request`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Refused: `trial_expired`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused: `workspace_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused: `idempotency_in_progress`, `idempotency_key_reused`, `workspace_archived`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Refused: `payload_too_large`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Refused: `unsupported_media_type`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Refused: `invalid_issue_type`, `tracker_not_connected`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Refused: `tracker_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{key}": {
+      "get": {
+        "operationId": "getTask",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Get a task",
+        "description": "A task of the account’s Tasks, with its status, its playbook and its runs.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The task’s key, as its tracker or Kadmo gave it.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The task.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused: `task_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{key}/runs": {
+      "post": {
+        "operationId": "runTask",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Run a playbook on a task",
+        "description": "Approve the task with a playbook. The run starts when nothing holds it — the tasks it depends on, its workspace’s pool, a step only a person can do: 201 with the run when it started in the call, 202 with what it waits on when it did not, and it then starts on its own. A task not in Tasks yet is added from its tracker. A run can spend the account’s credit.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The task’s key, as its tracker or Kadmo gave it.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional. The same key with the same request within 24 hours answers the first answer again and writes nothing.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "pattern": "^[\\x21-\\x7E]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The run started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskRunResult"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "The task is approved; the run starts once what it waits on clears.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskRunResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused: `invalid_idempotency_key`, `invalid_request`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Refused: `trial_expired`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused: `playbook_not_found`, `task_not_found`, `workspace_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused: `idempotency_in_progress`, `idempotency_key_reused`, `run_active`, `workspace_archived`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Refused: `payload_too_large`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Refused: `unsupported_media_type`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Refused: `playbook_not_runnable`, `tracker_not_connected`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Refused: `orchestrator_error`, `tracker_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "post": {
+        "operationId": "createWebhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Subscribe a URL to events",
+        "description": "Make a subscription of the token’s member: each event it lists is POSTed to the URL, signed with the subscription’s secret, and retried for 24 hours when the endpoint fails. The answer carries the secret, this once.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional. The same key with the same request within 24 hours answers the first answer again and writes nothing.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "pattern": "^[\\x21-\\x7E]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The subscription, with its secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused: `invalid_idempotency_key`, `invalid_request`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Refused: `trial_expired`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused: `workspace_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused: `idempotency_in_progress`, `idempotency_key_reused`, `webhook_limit_reached`, `workspace_archived`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Refused: `payload_too_large`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Refused: `unsupported_media_type`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Refused: `invalid_webhook_url`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Refused: `webhook_check_unavailable`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listWebhooks",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "List subscriptions",
+        "description": "The token’s member’s subscriptions, newest first, without their secrets.",
+        "responses": {
+          "200": {
+            "description": "The subscriptions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/{id}": {
+      "delete": {
+        "operationId": "deleteWebhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Unsubscribe",
+        "description": "Delete one of the token’s member’s subscriptions: nothing more is delivered to it, the deliveries still waiting included.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The subscription’s id.",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The subscription is deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeleted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused: `webhook_not_found`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces": {
+      "get": {
+        "operationId": "listWorkspaces",
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List workspaces",
+        "description": "The account’s active workspaces: what `workspace` names in a call, and where each files a new task.",
+        "responses": {
+          "200": {
+            "description": "The workspaces.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows": {
+      "get": {
+        "operationId": "listWorkflows",
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List workflows",
+        "description": "The workflows a dispatch can name — the enabled ones — with the inputs each reads.",
+        "responses": {
+          "200": {
+            "description": "The workflows.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/playbooks": {
+      "get": {
+        "operationId": "listPlaybooks",
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List playbooks",
+        "description": "The playbooks a run can name — the enabled ones — with their steps.",
+        "responses": {
+          "200": {
+            "description": "The playbooks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refused: `unauthorized`.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Always `Bearer`.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Refused: `method_not_allowed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Refused: `rate_limited`.",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Refused: `internal_error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "job.finished": {
+      "post": {
+        "summary": "job.finished",
+        "description": "A job ended: succeeded, failed or cancelled. Sent once its files and report have arrived, at most ten minutes after the end.",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "Kadmo-Event",
+            "in": "header",
+            "required": true,
+            "description": "The event, as `type` in the body.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Delivery",
+            "in": "header",
+            "required": true,
+            "description": "The delivery’s id, as `id` in the body: the same on every retry.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Timestamp",
+            "in": "header",
+            "required": true,
+            "description": "This attempt’s time, in Unix seconds: refuse one older than five minutes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Signature",
+            "in": "header",
+            "required": true,
+            "description": "`v1=` and the lower-case hex HMAC-SHA256 of `<Kadmo-Timestamp>.<body>`, keyed with the subscription’s secret; several values may be listed, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Any 2xx answer is a delivery. Any other is retried for 24 hours; a 410 disables the subscription."
+          }
+        }
+      }
+    },
+    "job.needs_input": {
+      "post": {
+        "summary": "job.needs_input",
+        "description": "A job waits on a person: a question of its agent or a gate’s approval. Sent two minutes after the ask, if it is still open.",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "Kadmo-Event",
+            "in": "header",
+            "required": true,
+            "description": "The event, as `type` in the body.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Delivery",
+            "in": "header",
+            "required": true,
+            "description": "The delivery’s id, as `id` in the body: the same on every retry.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Timestamp",
+            "in": "header",
+            "required": true,
+            "description": "This attempt’s time, in Unix seconds: refuse one older than five minutes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Signature",
+            "in": "header",
+            "required": true,
+            "description": "`v1=` and the lower-case hex HMAC-SHA256 of `<Kadmo-Timestamp>.<body>`, keyed with the subscription’s secret; several values may be listed, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Any 2xx answer is a delivery. Any other is retried for 24 hours; a 410 disables the subscription."
+          }
+        }
+      }
+    },
+    "task.done": {
+      "post": {
+        "summary": "task.done",
+        "description": "A task is done: its run resolved, or closed with nothing to do.",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "Kadmo-Event",
+            "in": "header",
+            "required": true,
+            "description": "The event, as `type` in the body.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Delivery",
+            "in": "header",
+            "required": true,
+            "description": "The delivery’s id, as `id` in the body: the same on every retry.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Timestamp",
+            "in": "header",
+            "required": true,
+            "description": "This attempt’s time, in Unix seconds: refuse one older than five minutes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Signature",
+            "in": "header",
+            "required": true,
+            "description": "`v1=` and the lower-case hex HMAC-SHA256 of `<Kadmo-Timestamp>.<body>`, keyed with the subscription’s secret; several values may be listed, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Any 2xx answer is a delivery. Any other is retried for 24 hours; a 410 disables the subscription."
+          }
+        }
+      }
+    },
+    "ping": {
+      "post": {
+        "summary": "ping",
+        "description": "A test delivery, sent from the Integrations page.",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "Kadmo-Event",
+            "in": "header",
+            "required": true,
+            "description": "The event, as `type` in the body.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Delivery",
+            "in": "header",
+            "required": true,
+            "description": "The delivery’s id, as `id` in the body: the same on every retry.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Timestamp",
+            "in": "header",
+            "required": true,
+            "description": "This attempt’s time, in Unix seconds: refuse one older than five minutes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kadmo-Signature",
+            "in": "header",
+            "required": true,
+            "description": "`v1=` and the lower-case hex HMAC-SHA256 of `<Kadmo-Timestamp>.<body>`, keyed with the subscription’s secret; several values may be listed, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Any 2xx answer is a delivery. Any other is retried for 24 hours; a 410 disables the subscription."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API token (`kadmo_api_…`), created in Settings › Assistant."
+      }
+    },
+    "schemas": {
+      "Me": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "email"
+            ],
+            "description": "The member the token belongs to and acts as."
+          },
+          "account": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "name": {
+                "type": "string"
+              },
+              "slug": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "slug"
+            ],
+            "description": "The member’s account: everything the token reads and starts is in it."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "description": "The member’s role in the account."
+          },
+          "token": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "description": "The token this call presented — its name as the member gave it."
+          }
+        },
+        "required": [
+          "user",
+          "account",
+          "role",
+          "token"
+        ]
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "The job’s id: given when it is dispatched, kept for its whole life."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "needs_input",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ],
+            "description": "`queued` until an agent takes it; `needs_input` while it waits on a person; the last three are its end."
+          },
+          "workflow": {
+            "type": "string",
+            "description": "The workflow it runs, by name."
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "name"
+                ],
+                "description": "The workspace the job belongs to."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "An absolute link."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "key",
+                  "url"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The task it works on, when it names one."
+          },
+          "input": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The workflow’s inputs it was dispatched with."
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The member who dispatched it."
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The agent that took it; null while queued."
+          },
+          "run": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "running",
+                      "waiting",
+                      "paused",
+                      "finished",
+                      "failed",
+                      "cancelled"
+                    ],
+                    "description": "`paused` waits on a person (an approval or a fork to pick); `finished` carries its `outcome`."
+                  },
+                  "outcome": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "resolved",
+                          "no_action",
+                          "escalated",
+                          "rework"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "How a finished run ended; null until then."
+                  },
+                  "step_index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "The step the run is on, from 0."
+                  },
+                  "playbook": {
+                    "type": "object",
+                    "properties": {
+                      "slug": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "slug",
+                      "name"
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "An absolute link."
+                  }
+                },
+                "required": [
+                  "id",
+                  "status",
+                  "outcome",
+                  "step_index",
+                  "playbook",
+                  "url"
+                ],
+                "description": "The playbook run the job is a step of."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "needs_input": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "approval",
+                      "question"
+                    ]
+                  },
+                  "question": {
+                    "type": "string",
+                    "description": "What the person is asked: the agent’s question, plan or request, or that a gate waits for approval."
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The answers the agent offered, when it offered some."
+                  },
+                  "asked_at": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "An instant, ISO 8601 in UTC."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "When it was asked."
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Where it is answered: the job’s page in the app."
+                  }
+                },
+                "required": [
+                  "reason",
+                  "question",
+                  "options",
+                  "asked_at",
+                  "url"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "While `needs_input`: an approval a gate waits on, or a question of the agent — the oldest one open. Answer it in the app."
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "verdict": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "pull_requests": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "An absolute link."
+                        },
+                        "number": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "repository": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "number",
+                        "repository"
+                      ]
+                    }
+                  },
+                  "evidence": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "An absolute link."
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "url"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "verdict",
+                  "summary",
+                  "pull_requests",
+                  "evidence"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the agent reported, once it has; null before."
+          },
+          "error": {
+            "description": "Why it failed or was cancelled, when something recorded why.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "app_job_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The app’s job number, once an agent took it."
+          },
+          "url": {
+            "type": "string",
+            "description": "The job in the app: its page once an agent took it, the queue before."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "An instant, ISO 8601 in UTC."
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An instant, ISO 8601 in UTC."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An instant, ISO 8601 in UTC."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "workflow",
+          "workspace",
+          "task",
+          "input",
+          "created_by",
+          "agent",
+          "run",
+          "needs_input",
+          "result",
+          "error",
+          "app_job_id",
+          "url",
+          "created_at",
+          "started_at",
+          "finished_at"
+        ]
+      },
+      "JobList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            },
+            "description": "Newest first."
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "description": "Pass as `cursor` for the next page; null on the last.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "next_cursor"
+        ]
+      },
+      "Workspace": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "What `workspace` names in a call."
+          },
+          "name": {
+            "type": "string"
+          },
+          "new_tasks": {
+            "type": "object",
+            "properties": {
+              "tracker": {
+                "type": "string",
+                "enum": [
+                  "internal",
+                  "jira",
+                  "linear",
+                  "notion"
+                ]
+              },
+              "project": {
+                "description": "The tracker’s project or team; null for internal.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "tracker",
+              "project"
+            ],
+            "description": "Where a task created in the workspace is filed."
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "new_tasks"
+        ]
+      },
+      "WorkspaceList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workspace"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Workflow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "What `workflow` names in a dispatch."
+          },
+          "description": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean",
+                  "description": "False when the workflow has a default for it."
+                },
+                "default": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "required",
+                "default"
+              ]
+            },
+            "description": "The inputs it reads, as keys of a dispatch’s `input`."
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "parameters"
+        ]
+      },
+      "WorkflowList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workflow"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Playbook": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "What `playbook` names in a run."
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "workflow": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "role",
+                "workflow"
+              ]
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "description",
+          "steps"
+        ]
+      },
+      "PlaybookList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Playbook"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TaskRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "waiting",
+              "paused",
+              "finished",
+              "failed",
+              "cancelled"
+            ],
+            "description": "`paused` waits on a person (an approval or a fork to pick); `finished` carries its `outcome`."
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "resolved",
+                  "no_action",
+                  "escalated",
+                  "rework"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How a finished run ended; null until then."
+          },
+          "step_index": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "The step the run is on, from 0."
+          },
+          "playbook": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "An absolute link."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "An instant, ISO 8601 in UTC."
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An instant, ISO 8601 in UTC."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "outcome",
+          "step_index",
+          "playbook",
+          "url",
+          "created_at",
+          "finished_at"
+        ],
+        "description": "A playbook run on the task."
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The task’s key, as its tracker names it: what `{key}` is in a path."
+          },
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "The task’s id in Kadmo."
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "Its issue type: `Task`, `Bug`, `Story` …"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "waiting",
+              "running",
+              "paused",
+              "done",
+              "failed",
+              "cancelled"
+            ],
+            "description": "`pending` awaits an approval; `waiting` is approved and waits on a blocker or a pool slot; the last three are its end."
+          },
+          "in_pool": {
+            "type": "boolean",
+            "description": "False once the task was archived from Tasks."
+          },
+          "tracker": {
+            "type": "string",
+            "enum": [
+              "internal",
+              "jira",
+              "linear",
+              "notion"
+            ],
+            "description": "Where the ticket lives: `internal` is Kadmo’s own."
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "name"
+                ],
+                "description": "The workspace the job belongs to."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The workspace the task belongs to; null while none is known."
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "highest",
+                  "high",
+                  "medium",
+                  "low",
+                  "lowest"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "playbook": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "name"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The playbook a run of it starts; null until one is chosen."
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The run the task is bound to now; null while none is."
+          },
+          "runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskRun"
+            },
+            "description": "Its runs, newest first, at most 20."
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An absolute link."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The task’s page in the app for an internal task, else its tracker’s."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "An instant, ISO 8601 in UTC."
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "An instant, ISO 8601 in UTC."
+          }
+        },
+        "required": [
+          "key",
+          "id",
+          "title",
+          "type",
+          "status",
+          "in_pool",
+          "tracker",
+          "workspace",
+          "priority",
+          "playbook",
+          "run",
+          "runs",
+          "url",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "TaskRunResult": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/Task"
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The run that started; null while it waits."
+          },
+          "waiting_on": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "blocked_by",
+                      "pool_full",
+                      "person_step",
+                      "blocker_failed",
+                      "role_not_runnable",
+                      "retrying"
+                    ],
+                    "description": "`blocked_by`: tasks it depends on are not done; `pool_full`: its workspace runs as many playbooks as it may; `person_step`: a step only a person can do comes first; `blocker_failed`: a task it depends on failed or was cancelled; `role_not_runnable`: no agent of the account can run a step’s role; `retrying`: the start failed and is retried."
+                  },
+                  "blockers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The keys it waits on, for `blocked_by` and `blocker_failed`."
+                  },
+                  "message": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "reason",
+                  "blockers",
+                  "message"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the start waits on; null once the run started."
+          }
+        },
+        "required": [
+          "task",
+          "run",
+          "waiting_on"
+        ]
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "The subscription’s id: what `DELETE /webhooks/{id}` names."
+          },
+          "url": {
+            "type": "string",
+            "description": "The https URL each event is POSTed to."
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "job.finished",
+                "job.needs_input",
+                "task.done"
+              ],
+              "description": "`job.finished`: a job ended (succeeded, failed or cancelled); `job.needs_input`: a job waits on a person; `task.done`: a task is done."
+            },
+            "description": "The events it takes."
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "name"
+                ],
+                "description": "The workspace the job belongs to."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The one workspace whose events it takes; null for every workspace."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "description": "`disabled` receives nothing until it is enabled again on the Integrations page."
+          },
+          "disabled_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "failing",
+                  "gone"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why it was disabled: `failing` — its endpoint failed every delivery for 24 hours; `gone` — its endpoint answered 410. Null while active."
+          },
+          "created_by": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "description": "The member who made it: it is theirs, and goes when they leave the account."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "An instant, ISO 8601 in UTC."
+          },
+          "last_delivery_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An instant, ISO 8601 in UTC."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When its endpoint last took a delivery; null before the first."
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "events",
+          "workspace",
+          "status",
+          "disabled_reason",
+          "created_by",
+          "created_at",
+          "last_delivery_at"
+        ]
+      },
+      "WebhookCreated": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "The subscription’s id: what `DELETE /webhooks/{id}` names."
+          },
+          "url": {
+            "type": "string",
+            "description": "The https URL each event is POSTed to."
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "job.finished",
+                "job.needs_input",
+                "task.done"
+              ],
+              "description": "`job.finished`: a job ended (succeeded, failed or cancelled); `job.needs_input`: a job waits on a person; `task.done`: a task is done."
+            },
+            "description": "The events it takes."
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "name"
+                ],
+                "description": "The workspace the job belongs to."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The one workspace whose events it takes; null for every workspace."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "description": "`disabled` receives nothing until it is enabled again on the Integrations page."
+          },
+          "disabled_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "failing",
+                  "gone"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why it was disabled: `failing` — its endpoint failed every delivery for 24 hours; `gone` — its endpoint answered 410. Null while active."
+          },
+          "created_by": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "description": "The member who made it: it is theirs, and goes when they leave the account."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "An instant, ISO 8601 in UTC."
+          },
+          "last_delivery_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An instant, ISO 8601 in UTC."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When its endpoint last took a delivery; null before the first."
+          },
+          "secret": {
+            "type": "string",
+            "description": "The secret every delivery is signed with (`Kadmo-Signature`). Shown this once: keep it where the receiver reads it."
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "events",
+          "workspace",
+          "status",
+          "disabled_reason",
+          "created_by",
+          "created_at",
+          "last_delivery_at",
+          "secret"
+        ]
+      },
+      "WebhookList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Webhook"
+            },
+            "description": "Newest first."
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "WebhookDeleted": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "deleted": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "id",
+          "deleted"
+        ]
+      },
+      "WebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "The delivery’s id: the same on every retry of it, so a receiver drops a repeat by it."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "job.finished",
+              "job.needs_input",
+              "task.done",
+              "ping"
+            ],
+            "description": "The event; `ping` is a test delivery sent from the Integrations page."
+          },
+          "api_version": {
+            "type": "string",
+            "const": "v1",
+            "description": "The payload’s version: fields are added to it, never renamed or removed."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "When the payload was composed, before its first attempt."
+          },
+          "webhook_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "The subscription it was delivered to."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "job": {
+                "description": "For `job.finished` and `job.needs_input`: the job, as `GET /jobs/{id}` answers it.",
+                "$ref": "#/components/schemas/Job"
+              },
+              "task": {
+                "description": "For `task.done`: the task, as `GET /tasks/{key}` answers it.",
+                "$ref": "#/components/schemas/Task"
+              }
+            },
+            "description": "The object the event is about; empty for a `ping`."
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "api_version",
+          "created_at",
+          "webhook_id",
+          "data"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "What went wrong, as a sentence for a person."
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "invalid_request",
+              "invalid_idempotency_key",
+              "workspace_required",
+              "unauthorized",
+              "trial_expired",
+              "no_credit",
+              "budget_reached",
+              "not_found",
+              "job_not_found",
+              "workspace_not_found",
+              "workflow_not_found",
+              "task_not_found",
+              "playbook_not_found",
+              "webhook_not_found",
+              "method_not_allowed",
+              "idempotency_key_reused",
+              "idempotency_in_progress",
+              "duplicate_job",
+              "workspace_archived",
+              "run_active",
+              "webhook_limit_reached",
+              "payload_too_large",
+              "unsupported_media_type",
+              "role_not_runnable",
+              "role_not_enabled",
+              "model_not_in_plan",
+              "workflow_not_runnable",
+              "playbook_not_runnable",
+              "invalid_issue_type",
+              "tracker_not_connected",
+              "invalid_webhook_url",
+              "rate_limited",
+              "daily_cap_reached",
+              "internal_error",
+              "tracker_error",
+              "orchestrator_error",
+              "authorisation_unavailable",
+              "webhook_check_unavailable"
+            ],
+            "description": "What a client branches on: stable, one per kind of refusal."
+          },
+          "details": {
+            "description": "For `invalid_request`: each field refused, by its path in the body.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "message"
+              ]
+            }
+          },
+          "issue_types": {
+            "description": "For `invalid_issue_type`: the types the account files.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ticket_key": {
+            "description": "For a `tracker_error` or an `orchestrator_error` after the ticket was filed or the run created: its key. A retry with the same `Idempotency-Key` answers this again.",
+            "type": "string"
+          },
+          "run": {
+            "description": "For `run_active`: the run that drives the task. For `orchestrator_error`: the run that did not start.",
+            "$ref": "#/components/schemas/TaskRun"
+          },
+          "role": {
+            "description": "For `role_not_runnable`: the role no agent of the account can run.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "code"
+        ]
+      },
+      "CreateJobRequest": {
+        "type": "object",
+        "properties": {
+          "workflow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The workflow to run, by name (`GET /workflows`)."
+          },
+          "workspace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The workspace it runs in, by slug (`GET /workspaces`)."
+          },
+          "input": {
+            "description": "The workflow’s inputs, by name: `ticket_url` and `hint` among them when it reads them.",
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 20000
+            }
+          },
+          "effort": {
+            "description": "An effort tier of the account (`low`, `medium`, `high`, or one of its own); unset, the workflow’s default.",
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+          }
+        },
+        "required": [
+          "workflow",
+          "workspace"
+        ],
+        "additionalProperties": false
+      },
+      "CreateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The workspace the task belongs to, by slug (`GET /workspaces`)."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "The ticket’s title."
+          },
+          "description": {
+            "description": "The ticket’s description, as plain text or Markdown.",
+            "type": "string",
+            "maxLength": 100000
+          },
+          "type": {
+            "description": "An issue type: `Task` when unset. An internal task takes a type of the account’s routing map.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "highest",
+              "high",
+              "medium",
+              "low",
+              "lowest"
+            ]
+          },
+          "tracker": {
+            "description": "`workspace` (the default) files where the workspace files new tasks (`GET /workspaces`); `internal` files a Kadmo task.",
+            "type": "string",
+            "enum": [
+              "workspace",
+              "internal"
+            ]
+          }
+        },
+        "required": [
+          "workspace",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "RunTaskRequest": {
+        "type": "object",
+        "properties": {
+          "playbook": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The playbook to run, by slug (`GET /playbooks`)."
+          },
+          "workspace": {
+            "description": "The workspace to run in, by slug; unset, the task’s own.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "effort": {
+            "description": "An effort tier of the account (`low`, `medium`, `high`, or one of its own); unset, the account’s default.",
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+          },
+          "hint": {
+            "description": "A note every step’s agent reads.",
+            "type": "string",
+            "maxLength": 20000
+          },
+          "sync_status": {
+            "description": "Move the ticket’s status in its tracker as the run goes; unset, the playbook’s default.",
+            "type": "boolean"
+          },
+          "validate": {
+            "description": "Check the delivered work once the run ends; unset, the account’s default.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "playbook"
+        ],
+        "additionalProperties": false
+      },
+      "CreateWebhookRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The https URL to POST each event to. Every address its host resolves to must be public."
+          },
+          "events": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "job.finished",
+                "job.needs_input",
+                "task.done"
+              ]
+            },
+            "description": "The events to deliver: at least one."
+          },
+          "workspace": {
+            "description": "Only this workspace’s events, by slug (`GET /workspaces`); unset, every workspace’s.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "url",
+          "events"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

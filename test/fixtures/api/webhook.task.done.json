@@ -1,0 +1,12 @@
+{
+  "secret": "kadmo_whsec_EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLE0",
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "Kadmo-Webhooks/1",
+    "Kadmo-Event": "task.done",
+    "Kadmo-Delivery": "3",
+    "Kadmo-Timestamp": "1794540000",
+    "Kadmo-Signature": "v1=bf47d141278088fbaeb15de93cf5b969ba6f7953f7d09ca54652ec7f83326b29"
+  },
+  "body": "{\"id\":3,\"type\":\"task.done\",\"api_version\":\"v1\",\"created_at\":\"2026-11-13T04:57:06.884Z\",\"webhook_id\":1,\"data\":{\"task\":{\"key\":\"KAD-7\",\"id\":1,\"title\":\"Fix the login redirect\",\"type\":\"\",\"status\":\"done\",\"in_pool\":true,\"tracker\":\"jira\",\"workspace\":{\"slug\":\"main\",\"name\":\"Main\"},\"priority\":null,\"playbook\":{\"slug\":\"bug-fix\",\"name\":\"Bug Fix\"},\"run\":{\"id\":1,\"status\":\"finished\",\"outcome\":\"resolved\",\"step_index\":1,\"playbook\":{\"slug\":\"bug-fix\",\"name\":\"Bug Fix\"},\"url\":\"https://app.example.test/playbooks/runs/1\",\"created_at\":\"2026-11-13T04:54:05.913Z\",\"finished_at\":\"2026-11-13T04:54:06.884Z\"},\"runs\":[{\"id\":1,\"status\":\"finished\",\"outcome\":\"resolved\",\"step_index\":1,\"playbook\":{\"slug\":\"bug-fix\",\"name\":\"Bug Fix\"},\"url\":\"https://app.example.test/playbooks/runs/1\",\"created_at\":\"2026-11-13T04:54:05.913Z\",\"finished_at\":\"2026-11-13T04:54:06.884Z\"}],\"url\":null,\"created_at\":\"2026-11-13T04:54:05.916Z\",\"updated_at\":\"2026-11-13T04:54:05.916Z\"}}}"
+}

@@ -1,0 +1,8 @@
+{
+  "operation": "deleteWebhook",
+  "status": 200,
+  "answer": {
+    "id": 106,
+    "deleted": true
+  }
+}

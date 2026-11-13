@@ -1,0 +1,13 @@
+{
+  "operation": "createTask",
+  "status": 502,
+  "request": {
+    "workspace": "main",
+    "title": "Half"
+  },
+  "answer": {
+    "error": "The tracker refused or failed: pool read timed out",
+    "code": "tracker_error",
+    "ticket_key": "MA-1"
+  }
+}
