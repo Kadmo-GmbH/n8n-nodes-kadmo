@@ -122,23 +122,40 @@ describe('create', () => {
 });
 
 describe('delete', () => {
-	it('deletes the stored subscription and any other on this URL, and clears the data', async () => {
+	it('deletes the stored subscription first, then any other on this URL, and clears the data', async () => {
 		const { context, staticData, calls } = hookContext({
 			answers: [
-				listed([subscription({ id: 7 }), subscription({ id: 9 })]),
 				{ statusCode: 200, body: { id: 7, deleted: true } },
+				listed([subscription({ id: 9 }), subscription({ id: 10, url: 'https://other.example.com/hook' })]),
 				{ statusCode: 200, body: { id: 9, deleted: true } },
 			],
 			staticData: { webhookId: 7, webhookSecret: SECRET },
 		});
 		expect(await hooks.delete.call(context)).toBe(true);
-		expect(calls().slice(1).map((call) => call.url)).toEqual(['/webhooks/7', '/webhooks/9']);
+		expect(calls().map((call) => `${String(call.method)} ${String(call.url)}`)).toEqual([
+			'DELETE /webhooks/7',
+			'GET /webhooks',
+			'DELETE /webhooks/9',
+		]);
+		expect(staticData).toEqual({});
+	});
+
+	it('has deleted the stored subscription even when the list call fails afterwards', async () => {
+		const { context, staticData, calls } = hookContext({
+			answers: [
+				{ statusCode: 200, body: { id: 7, deleted: true } },
+				{ statusCode: 500, body: { code: 'internal_error' } },
+			],
+			staticData: { webhookId: 7, webhookSecret: SECRET },
+		});
+		await expect(hooks.delete.call(context)).rejects.toBeInstanceOf(NodeApiError);
+		expect(calls()[0]).toMatchObject({ method: 'DELETE', url: '/webhooks/7' });
 		expect(staticData).toEqual({});
 	});
 
 	it('treats a subscription already gone as deleted', async () => {
 		const { context, staticData } = hookContext({
-			answers: [listed([]), notFound],
+			answers: [notFound, listed([])],
 			staticData: { webhookId: 7, webhookSecret: SECRET },
 		});
 		expect(await hooks.delete.call(context)).toBe(true);

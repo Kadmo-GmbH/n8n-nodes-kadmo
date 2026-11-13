@@ -96,16 +96,21 @@ export async function subscribe(this: IHookFunctions): Promise<boolean> {
 	return true;
 }
 
-/** Deletes the stored subscription and any other on this URL, then forgets the id and the secret. */
+/**
+ * Deletes the stored subscription first, so a failing list call cannot leave it behind, then any other on this URL,
+ * and forgets the id and the secret.
+ */
 export async function unsubscribe(this: IHookFunctions): Promise<boolean> {
 	const data = this.getWorkflowStaticData('node');
-	const url = this.getNodeWebhookUrl('default');
-	const ids = new Set<number>();
-	if (data.webhookId) ids.add(data.webhookId as number);
-	for (const entry of await listSubscriptions.call(this)) {
-		if (url && entry.url === url) ids.add(entry.id as number);
-	}
-	for (const id of ids) await deleteSubscription.call(this, id);
+	const stored = data.webhookId as number | undefined;
+	if (stored) await deleteSubscription.call(this, stored);
 	clear(data);
+
+	const url = this.getNodeWebhookUrl('default');
+	if (url) {
+		for (const entry of await listSubscriptions.call(this)) {
+			if (entry.url === url && entry.id !== stored) await deleteSubscription.call(this, entry.id as number);
+		}
+	}
 	return true;
 }
