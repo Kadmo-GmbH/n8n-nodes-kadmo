@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "n8n nodes for Kadmo: dispatch jobs, create tasks, run playbooks and react when the work finishes.",
   "license": "MIT",
-  "homepage": "https://github.com/Kadmo-GmbH/n8n-nodes-kadmo#readme",
+  "homepage": "https://kadmo.ai",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
@@ -13,7 +13,8 @@
   ],
   "author": {
     "name": "kadmo-max",
-    "email": "max.svistunov@kadmo.ai"
+    "email": "max.svistunov@kadmo.ai",
+    "url": "https://kadmo.ai"
   },
   "repository": {
     "type": "git",
