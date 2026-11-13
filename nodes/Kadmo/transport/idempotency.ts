@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import type { IExecuteFunctions } from 'n8n-workflow';
 
 export interface IdempotencyParts {
@@ -21,7 +23,8 @@ export function idempotencyKey(this: IExecuteFunctions, itemIndex: number, overr
 	const own = override.trim();
 	if (own) return own;
 	return buildIdempotencyKey({
-		executionId: String(this.getExecutionId() ?? 'manual'),
+		// Without an execution id a fixed stand-in would give every execution the same key: a fresh one is used instead.
+		executionId: String(this.getExecutionId() ?? `once-${randomUUID()}`),
 		nodeId: this.getNode().id,
 		runIndex: this.getWorkflowDataProxy(itemIndex).$runIndex ?? 0,
 		itemIndex,

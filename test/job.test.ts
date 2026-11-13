@@ -104,7 +104,7 @@ describe('Job › Dispatch', () => {
 		expect(items[0].json).toEqual(createJobQueued.answer);
 	});
 
-	it('leaves out the mapper’s empty values and merges Extra Inputs, effort and the own key', async () => {
+	it('leaves out empty values of the mapper and of Extra Inputs, and merges Extra Inputs, effort and the own key', async () => {
 		const { http } = await run({
 			params: {
 				...dispatchParams,
@@ -135,7 +135,6 @@ describe('Job › Dispatch', () => {
 				count: '3',
 				flags: '{"a":true}',
 				hint: 'Look at the cookie.',
-				blank: '',
 			},
 			effort: 'high',
 		});

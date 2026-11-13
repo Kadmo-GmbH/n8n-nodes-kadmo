@@ -32,7 +32,7 @@ The **Kadmo** node:
 | Task | Run Playbook | Approves a task with a playbook. The run starts when nothing holds it (a task it depends on, a full pool, a step only a person can do). |
 
 - **Workspace**, **Workflow** and **Playbook** are picked from lists read from your Kadmo account, or named by slug or name.
-- When you pick a workflow, its **Inputs** appear: required inputs are marked as such, and an input left empty takes the workflow's default. **Extra Inputs** sends inputs by name, for a workflow chosen by an expression.
+- When you pick a workflow, its **Inputs** appear: required inputs are marked as such, and an input left empty takes the workflow's default. **Extra Inputs** sends inputs by name, for a workflow chosen by an expression; an empty value is left out there too.
 - **Simplify** (on by default) returns the ten fields a workflow usually needs. Turn it off for the whole object as Kadmo answers it.
 - **Run Playbook** answers in two ways: with the run when it started at once, or with `run: null` and `waiting_on` (the reason) when it waits. Use an If node on `run` to tell them apart, then a Kadmo Trigger or a Get to follow it.
 - The node can be used as a tool by an AI Agent node.

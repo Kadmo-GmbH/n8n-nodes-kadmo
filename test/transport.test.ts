@@ -351,8 +351,10 @@ describe('idempotency keys', () => {
 		expect(keyFor({ executionId: 'exec-2' }, 0)).toBe('n8n-exec-2-node-uuid-0-0');
 	});
 
-	it('uses "manual" without an execution id', () => {
-		expect(keyFor({ executionId: undefined }, 0)).toBe('n8n-manual-node-uuid-0-0');
+	it('uses a fresh stand-in without an execution id, so two executions never share a key', () => {
+		const first = keyFor({ executionId: undefined }, 0);
+		expect(first).toMatch(/^n8n-once-[0-9a-f-]{36}-node-uuid-0-0$/);
+		expect(keyFor({ executionId: undefined }, 0)).not.toBe(first);
 	});
 
 	it('the override wins, trimmed', () => {

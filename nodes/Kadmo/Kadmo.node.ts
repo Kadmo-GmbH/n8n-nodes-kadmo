@@ -214,7 +214,9 @@ export function dispatchBody(
 	if (Array.isArray(extra)) {
 		for (const entry of extra as IDataObject[]) {
 			const name = String(entry.name ?? '').trim();
-			if (name) input[name] = String(entry.value ?? '');
+			const value = String(entry.value ?? '');
+			// An empty value is left out like the mapper's: Kadmo takes a sent '' as set and skips the input's default.
+			if (name && value) input[name] = value;
 		}
 	}
 	const body: IDataObject = { workflow: workflow.trim(), workspace: workspace.trim() };
